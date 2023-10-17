@@ -1,0 +1,85 @@
+// ==UserScript==
+// @name         Bypass YouTube Anti-Adblock
+// @version      1.0
+// @description  Bypass YouTube Anti-Adblock
+// @author       makercyf
+// @match        *://*.youtube.com/watch?v=*
+// @grant        none
+// ==/UserScript==
+
+(function () {
+    'use strict';
+
+    // Create a button element
+    var customButton = document.createElement('button');
+    customButton.innerHTML = '⚪';
+
+    // Apply the provided styles
+    customButton.style = `
+        height: 55px;
+        width: 55px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: #333;
+        color: #fff;
+        position: fixed;
+        left: 700px;
+        bottom: 50px;
+        cursor: pointer;
+        z-index: 99999;
+    `;
+
+    function toggleButtonVisibility() {
+        var windowWidth = window.innerWidth;
+        var windowHeight = window.innerHeight;
+
+        if (windowWidth >= 1300 && windowHeight >= 720) {
+            // Window is large enough, show the button
+            customButton.style.display = 'flex';
+        } else {
+            // Window is too small, hide the button
+            customButton.style.display = 'none';
+        }
+    }
+
+    toggleButtonVisibility();
+
+    // Add a listener to check and set visibility on window resize
+    window.addEventListener('resize', toggleButtonVisibility);
+
+    // Define the button click event
+    customButton.addEventListener('click', function () {
+        // Open a new tab and load the specified HTML content
+        var shareButton = document.querySelector('#top-level-buttons-computed > ytd-button-renderer > yt-button-shape > button');
+
+        // If the button is found, simulate a click
+        if (shareButton) {
+            shareButton.click();
+
+            // Add a delay before interacting with the share menu (adjust as needed)
+            setTimeout(() => {
+                var embedButton = document.querySelector("#target");
+                embedButton.click();
+
+                // Add a delay before extracting the iframe content (adjust as needed)
+            }, 500);
+
+            setTimeout(() => {
+                var iframeString = document.querySelector("#textarea").value;
+
+                if (iframeString != '') {
+                    var iframeContent = iframeString.replace(/width="[^"]+"/, 'width="1271"').replace(/height="[^"]+"/, 'height="715"');
+                    // Open a new tab and insert the iframe content
+                    var newTab = window.open();
+                    // newTab.document.write(iframeContent);
+                    newTab.document.write(`<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Embedded YouTube Video</title><style>body {background-color: #0f0f0f; padding-left: 120px; padding-top: 70px;}</style></head>`+iframeContent);
+                }
+            }, 500);
+        }
+    });
+
+    // Append the button to the body or another element on the page
+    document.body.appendChild(customButton);
+})();
